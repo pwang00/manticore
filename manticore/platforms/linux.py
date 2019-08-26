@@ -2145,20 +2145,34 @@ class Linux(Platform):
         # TODO Unimplemented src_addr and addrlen, so act like sys_recv
         return self.sys_recv(sockfd, buf, count, flags, trace_str="_recvfrom")
 
-    def sys_send(self, sockfd, buf, count, flags):
+    def sys_send(self, sockfd, buf, count, flags, trace_str="_send"):
+        if not self.current.memory.access_ok(slice(buf, buf + count), "r"):
+            logger.info("SEND: buf within invalid memory. Returning EFAULT")
+            return -errno.EFAULT
+
         try:
-            sock = self.files[sockfd]
-        except IndexError:
-            return -errno.EINVAL
+            sock = self._get_fd(sockfd)
+        except FdError:
+            return -errno.EBADF
 
         if not isinstance(sock, Socket):
             return -errno.ENOTSOCK
 
         data = self.current.read_bytes(buf, count)
         # XXX(yan): send(2) is currently a nop; we don't communicate yet
-        self.syscall_trace.append(("_send", sockfd, data))
+        self.syscall_trace.append((trace_str, sockfd, data))
 
         return count
+
+    def sys_sendto(self, sockfd, buf, count, flags, dest_addr, addrlen):
+        if dest_addr != 0:
+            logger.warning("sys_sendto: Unimplemented non-NULL dest_addr")
+
+        if addrlen != 0:
+            logger.warning("sys_sendto: Unimplemented non-NULL addrlen")
+
+        # TODO Unimplemented dest_addr and addrlen, so act like sys_send
+        return self.sys_send(sockfd, buf, count, flags, trace_str="_sendto")
 
     def sys_sendfile(self, out_fd, in_fd, offset_p, count):
         if offset_p != 0:
