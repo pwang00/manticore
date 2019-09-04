@@ -105,6 +105,7 @@ run_truffle_tests(){
 }
 
 run_tests_from_dir() {
+    pip list
     DIR=$1
     coverage erase
     coverage run -m unittest  discover -c -v  "tests/$DIR" 2>&1 >/dev/null | tee travis_tests.log
