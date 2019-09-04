@@ -1,10 +1,10 @@
-dist: trusty
+dist: xenial
 sudo: required
 os:
   - linux
 language: python
 python:
-  - 3.6.6
+  - 3.7.3
 
 stages:
   - format
@@ -32,8 +32,8 @@ branches:
 cache:
   pip: true
   directories:
-  - $HOME/virtualenv/python3.6.6/lib/python3.6/site-packages
-  - $HOME/virtualenv/python3.6.6/bin/
+  - $HOME/virtualenv/python3.7.3/lib/python3.7/site-packages
+  - $HOME/virtualenv/python3.7.3/bin/
 
 jobs:
   include:
@@ -51,7 +51,7 @@ jobs:
       script:
         - true
       after_script:
-        - aws s3 sync "s3://manticore-testdata/coverage/$TRAVIS_COMMIT" coverage/ 
+        - aws s3 sync "s3://manticore-testdata/coverage/$TRAVIS_COMMIT" coverage/
         - ./cc-test-reporter sum-coverage --output - --parts $JOB_COUNT coverage/codeclimate.*.json | ./cc-test-reporter upload-coverage --input -
 
 install:
@@ -63,4 +63,3 @@ script:
 after_success:
   - ./cc-test-reporter format-coverage -t coverage.py -o "coverage/codeclimate.$TEST_TYPE.json"
   - aws s3 sync coverage/ "s3://manticore-testdata/coverage/$TRAVIS_COMMIT"
-
