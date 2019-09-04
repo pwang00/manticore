@@ -617,7 +617,7 @@ class ManticoreEVM(ManticoreBase):
                 self.kill()
                 raise
             except Exception as e:
-                logger.info("Failed to compile contract", str(e))
+                logger.info("Failed to compile contract: %s", str(e))
                 self.kill()
                 raise
 
@@ -625,7 +625,7 @@ class ManticoreEVM(ManticoreBase):
         for state in self.ready_states:
             if state.platform.get_code(int(contract_account)):
                 return contract_account
-        logger.info("Failed to compile contract", contract_names)
+        logger.info("Failed to compile contracts: %s", contract_names)
         return None
 
     def get_nonce(self, address):
